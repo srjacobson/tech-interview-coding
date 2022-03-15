@@ -82,7 +82,7 @@ pred$SubjectId <- barcode.dict[pred$barcode]
 
 res <- pred %>% group_by(SubjectId) %>% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
 
-write.table(res,"C:/Users/srjac/Documents/GitHub/tech-interview-coding/output.csv", row.names = T, col.names = T, sep = ",")
+write.table(res,"C:/Users/srjac/Documents/GitHub/tech-interview-coding/output.csv", row.names = T, col.names = T, quote = F, sep = ",")
 
 ```
 Method 2 - the sapply/apply method: Unlist the barcodes and use `apply` to match the barcodes up with the subject across the columns, then create a "dictionary" as before.
@@ -125,7 +125,7 @@ somalogic_data_processing <- function(barcode, pred, output_directory)
 
 	res <- pred %>% group_by(SubjectId) %>% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
 
-	write.table(res, paste0(output_directory, "/output.csv"), row.names = T, col.names = T, sep = ",")
+	write.table(res, paste0(output_directory, "/output.csv"), row.names = T, col.names = T, quote = F, sep = ",")
 
 }
 ```
