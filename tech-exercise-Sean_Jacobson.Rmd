@@ -1,0 +1,139 @@
+---
+title: "Technical Interview: Coding"
+author: "Sean Jacobson"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    fig_caption: yes
+    code_folding: show
+    number_sections: no
+    toc: yes
+    toc_float:
+      collapsed: no
+ratio: '9:16'
+fontsize: 13pt
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+ collapse = TRUE,
+ comment = "#>"
+)
+#
+# attach any required libraries here
+#
+
+library(dplyr)
+library(reshape2)
+```
+
+
+# Instructions
+
+1. Clone the repository and create a branch for your work
+1. Rename this file as instructed in the `README`
+1. Add any R packages you might require in the `setup` chunk
+1. Load necessary data into an R work space
+1. Read Questions below and complete the answers in the code chunks provided
+
+
+
+-----
+
+
+## Load Data
+
+Below write the code required to load the necessary data into an R work space.
+
+```{r load}
+#
+barcode <- read.csv("C:/Users/srjac/Documents/GitHub/tech-interview-coding/Barcode.csv")
+pred <- read.csv("C:/Users/srjac/Documents/GitHub/tech-interview-coding/Predictions.csv")
+#
+```
+
+
+## Questions
+
+1. What are the steps for producing the final table (see `README`)?
+1. Save the resulting table as `output.csv` and add to your branch
+1. How might you design this to make it automated and/or user-friendly?
+1. How would you ensure that the code/automation is robust or
+   less susceptible to breaking?
+
+
+--------
+
+
+## Answer #1
+
+Method 1 - The Tidyverse Method: Use "melt" to convert the barcode dataset into long format, then match subject IDs to barcodes matching across the columns. Create a "dictionary" to use barcodes as input and SubjectIds as output.
+
+Next use the "dictionary" to create a "SubjectId" column in the "pred" file to match to the barcodes. Then use `group_by` to calculate the means grouped by SubjectId. Then use `write.table` to output the resulting data file. 
+
+```{r Q1}
+barcode.long <- melt(barcode, id.vars = "SubjectId")
+
+barcode.dict <- barcode.long$SubjectId
+
+names(barcode.dict) <- barcode.long$value
+
+pred$SubjectId <- barcode.dict[pred$barcode]
+
+res <- pred %>% group_by(SubjectId) %>% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
+
+write.table(res,"C:/Users/srjac/Documents/GitHub/tech-interview-coding/output.csv", row.names = T, col.names = T, sep = ",")
+
+```
+Method 2 - the sapply/apply method: Unlist the barcodes and use `apply` to match the barcodes up with the subject across the columns, then create a "dictionary" as before.
+
+Then, calculate means across the subset of `pred` which matches the `SubjectId`.
+
+This way is less elegant and more difficult to follow. I would prefer the first way!
+
+```{r Q1 alt method}
+barcode.dict <- barcode$SubjectId[sapply(unlist(barcode[,-1]), function(x) {
+  barcode$SubjectId[which(apply(barcode, 1, function(z) {x %in% z}))]
+  })]
+names(barcode.dict) <- unlist(barcode[,-1])
+
+res <- cbind(unique(pred$SubjectId), 
+  t(sapply(unique(pred$SubjectId), function(x) {
+	apply(pred[pred$SubjectId == x, c("testA", "testB")], 2, mean)
+	})))
+
+```
+
+## Answer #2
+
+For automation, create a function that does above, with the two input files and output directory as output. 
+
+eg:
+
+```{r Q2}
+
+somalogic_data_processing <- function(barcode, pred, output_directory)
+{
+
+	barcode.long <- melt(barcode, id.vars = "SubjectId")
+
+	barcode.dict <- barcode.long$SubjectId
+
+	names(barcode.dict) <- barcode.long$value
+
+	pred$SubjectId <- barcode.dict[pred$barcode]
+
+	res <- pred %>% group_by(SubjectId) %>% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
+
+	write.table(res, paste0(output_directory, "/output.csv"), row.names = T, col.names = T, sep = ",")
+
+}
+```
+
+# Answer #3
+* In the case of the second example, the order of the unique SubjectIds is important, and using the `unique` function would potentially cause problems. 
+
+* Using the tidyverse method improves upon this weakness, by using `melt` to match the barcodes to the subject IDs and using `group_by` and `summarise` to automatically compute the means. 
+
+
+---------
