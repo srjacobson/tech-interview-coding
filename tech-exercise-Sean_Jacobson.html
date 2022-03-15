@@ -1664,7 +1664,7 @@ pred$SubjectId &lt;- barcode.dict[pred$barcode]
 
 res &lt;- pred %&gt;% group_by(SubjectId) %&gt;% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
 
-write.table(res,&quot;C:/Users/srjac/Documents/GitHub/tech-interview-coding/output.csv&quot;, row.names = T, col.names = T, quote = F, sep = &quot;,&quot;)</code></pre>
+write.table(res,&quot;C:/Users/srjac/Documents/GitHub/tech-interview-coding/output.csv&quot;, row.names = F, col.names = T, quote = F, sep = &quot;,&quot;)</code></pre>
 <p>Method 2 - the sapply/apply method: Unlist the barcodes and use
 <code>apply</code> to match the barcodes up with the subject across the
 columns, then create a “dictionary” as before.</p>
@@ -1701,7 +1701,7 @@ somalogic_data_processing &lt;- function(barcode, pred, output_directory)
 
     res &lt;- pred %&gt;% group_by(SubjectId) %&gt;% summarise(mean_testA = mean(testA), mean_testB = mean(testB))
 
-    write.table(res, paste0(output_directory, &quot;/output.csv&quot;), row.names = T, col.names = T, quote = F, sep = &quot;,&quot;)
+    write.table(res, paste0(output_directory, &quot;/output.csv&quot;), row.names = F, col.names = T, quote = F, sep = &quot;,&quot;)
 
 }</code></pre>
 </div>
